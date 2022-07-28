@@ -1,3 +1,4 @@
+using DelegasiAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DelegasiAPI.Controllers
@@ -15,9 +16,22 @@ namespace DelegasiAPI.Controllers
 
         // TODO: tambahkan pencarian WeatherForecast berdasarkan summary. Misal ketik "free" maka akan muncul data yang mengandung summary dg kata "free"
         [HttpGet]
-        public ActionResult<List<WeatherForecast>> Get()
+        public ActionResult<List<WeatherForecast>> Get(string? summary = null, int? pageIndex = 0, int? pageSize = 2)
         {
-            return Ok(WeatherForecastData.Data);
+            var data = WeatherForecastData.Data;
+
+            if (!string.IsNullOrEmpty(summary))
+            {
+                data = data.Where(x => x.Summary != null && x.Summary.Contains(summary, StringComparison.OrdinalIgnoreCase)).ToList();
+            }
+
+            var count = data.Count;
+
+            data = data.Skip(pageIndex * pageSize ?? 0).Take(pageSize ?? 2).ToList();
+
+            var result = new PageResult<WeatherForecast>(data, pageIndex.GetValueOrDefault(), pageSize.GetValueOrDefault(), count);
+
+            return Ok(result);
         }
 
         [HttpGet("{id}", Name = "GetWeatherForecastById")]
