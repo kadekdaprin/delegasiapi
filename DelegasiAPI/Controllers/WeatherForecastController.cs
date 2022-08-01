@@ -7,10 +7,12 @@ namespace DelegasiAPI.Controllers
     [Route("[controller]")]
     public class WeatherForecastController : ControllerBase
     {
+        private readonly WeatherForecastData _weatherForecastData;
         private readonly ILogger<WeatherForecastController> _logger;
 
-        public WeatherForecastController(ILogger<WeatherForecastController> logger)
+        public WeatherForecastController(ILogger<WeatherForecastController> logger, WeatherForecastData weatherForecastData)
         {
+            _weatherForecastData = weatherForecastData;
             _logger = logger;
         }
 
@@ -18,7 +20,7 @@ namespace DelegasiAPI.Controllers
         [HttpGet]
         public ActionResult<List<WeatherForecast>> Get(string? summary = null, int? pageIndex = 0, int? pageSize = 2)
         {
-            var data = WeatherForecastData.Data;
+            var data = _weatherForecastData.Data;
 
             if (!string.IsNullOrEmpty(summary))
             {
@@ -37,7 +39,7 @@ namespace DelegasiAPI.Controllers
         [HttpGet("{id}", Name = "GetWeatherForecastById")]
         public ActionResult<WeatherForecast> Get(int id)
         {
-            var result = WeatherForecastData.Data.FirstOrDefault(x => x.Id == id);
+            var result = _weatherForecastData.Data.FirstOrDefault(x => x.Id == id);
 
             if (result == null) return NotFound();
 
@@ -52,12 +54,12 @@ namespace DelegasiAPI.Controllers
                 return BadRequest(new { message = "Model tidak ada" });
             }
 
-            if (WeatherForecastData.Data.Any(x => x.Id == model.Id))
+            if (_weatherForecastData.Data.Any(x => x.Id == model.Id))
             {
                 return BadRequest(new { message = "Data duplikat" });
             }
 
-            WeatherForecastData.Data.Add(model);
+            _weatherForecastData.Data.Add(model);
 
             return Created(Url.Action("Get", new { model.Id }), model);
         }
@@ -70,7 +72,7 @@ namespace DelegasiAPI.Controllers
                 return BadRequest(new { message = "Model tidak ada" });
             }
 
-            var existingModel = WeatherForecastData.Data.FirstOrDefault(x => x.Id == id);
+            var existingModel = _weatherForecastData.Data.FirstOrDefault(x => x.Id == id);
 
             if (existingModel == null) return NotFound();
 
@@ -84,11 +86,11 @@ namespace DelegasiAPI.Controllers
         [HttpDelete("{id}")]
         public ActionResult<WeatherForecast> Put(int id)
         {
-            var existingModel = WeatherForecastData.Data.FirstOrDefault(x => x.Id == id);
+            var existingModel = _weatherForecastData.Data.FirstOrDefault(x => x.Id == id);
 
             if (existingModel == null) return NotFound();
 
-            WeatherForecastData.Data.Remove(existingModel);
+            _weatherForecastData.Data.Remove(existingModel);
 
             return Ok(existingModel);
         }

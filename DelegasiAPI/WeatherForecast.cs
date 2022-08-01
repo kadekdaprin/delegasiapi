@@ -1,8 +1,8 @@
 namespace DelegasiAPI
 {
-    public static class WeatherForecastData
+    public class WeatherForecastData
     {
-        public static List<WeatherForecast> Data = new List<WeatherForecast>()
+        public List<WeatherForecast> Data = new List<WeatherForecast>()
         {
             new WeatherForecast()
             {
