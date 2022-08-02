@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using DelegasiAPI.Models;
+using DelegasiAPI.Repositories;
 using Mahas.Components;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -12,30 +13,18 @@ namespace DelegasiAPI.Controllers
     public class SampleController : ControllerBase
     {
         private readonly string _connectionString;
+        private readonly SampleRepository _sampleRepository;
 
-        public SampleController(IConfiguration configuration)
+        public SampleController(IConfiguration configuration, SampleRepository sampleRepository)
         {
             _connectionString = configuration.GetConnectionString("MainConnection");
+            _sampleRepository = sampleRepository;
         }
 
         [HttpGet]
         public ActionResult<List<SampleModel>> Get(string? nama = null)
         {
-            using var conn = new SqlConnection(_connectionString);
-            List<SampleModel> result;
-
-            var query = "SELECT * FROM SampleTable";
-
-            Dictionary<string, object> param = new();
-
-            if (!string.IsNullOrEmpty(nama))
-            {
-                query += " WHERE Name LIKE @nama";
-
-                param.Add("nama", $"%{nama}%");
-            }
-
-            result = conn.Query<SampleModel>(query, param).ToList();
+            var result = _sampleRepository.Get(nama);
 
             return Ok(result);
         }
