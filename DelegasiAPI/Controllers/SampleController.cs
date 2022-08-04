@@ -12,31 +12,27 @@ namespace DelegasiAPI.Controllers
     [ApiController]
     public class SampleController : ControllerBase
     {
-        private readonly string _connectionString;
         private readonly SampleRepository _sampleRepository;
 
-        public SampleController(IConfiguration configuration, SampleRepository sampleRepository)
+        public SampleController(SampleRepository sampleRepository)
         {
-            _connectionString = configuration.GetConnectionString("MainConnection");
             _sampleRepository = sampleRepository;
         }
 
         [HttpGet]
-        public ActionResult<List<SampleModel>> Get(string? nama = null)
+        public async Task<ActionResult<List<SampleModel>>> GetAsync(string? nama = null)
         {
-            var result = _sampleRepository.Get(nama);
+            var result = await _sampleRepository.GetAsync(nama);
 
             return Ok(result);
         }
 
         [HttpGet("{id}")]
-        public ActionResult<SampleModel> Get(int? id = null)
+        public async Task<ActionResult<SampleModel>> GetAsync(int? id = null)
         {
-            using var conn = new SqlConnection(_connectionString);
+            if (id == null) return NotFound();
 
-            var query = "SELECT TOP 1 * FROM SampleTable WHERE Id = @id";
-
-            var result = conn.QueryFirstOrDefault<SampleModel>(query, new { id });
+            var result = await _sampleRepository.GetAsync(id.GetValueOrDefault());
 
             if (result == null) return NotFound();
 
@@ -46,63 +42,25 @@ namespace DelegasiAPI.Controllers
         [HttpPost]
         public async Task<ActionResult<SampleModel>> PostAsync([FromBody] SampleModel model)
         {
-            using var conn = new SqlConnection(_connectionString);
+            var result = await _sampleRepository.InsertAsync(model);
 
-            await conn.OpenAsync();
+            var uri = Url.Action("Get", new { id = result.Id });
 
-            using var transaction = conn.BeginTransaction();
-
-            model.Id = await conn.InsertAsync(model, true, transaction);
-
-            await transaction.CommitAsync();
-
-            var uri = Url.Action("Get", new { id = model.Id });
-
-            return Created(uri, model);
+            return Created(uri, result);
         }
 
-        [HttpPut("{id}")]
-        public async Task<ActionResult> DeleteAsync(int id, SampleModel model)
+        [HttpPut]
+        public async Task<ActionResult> PutAsync(SampleModel model)
         {
-            using var conn = new SqlConnection(_connectionString);
+            var result = await _sampleRepository.UpdateAsync(model);
 
-            await conn.OpenAsync();
-
-            var query = "SELECT TOP 1 * FROM SampleTable WHERE Id = @id";
-
-            var dbModel = conn.QueryFirstOrDefault<SampleModel>(query, new { id });
-
-            if (dbModel == null) return NotFound();
-
-            dbModel.Name = model.Name;
-
-            using var transaction = conn.BeginTransaction();
-
-            await conn.UpdateAsync(dbModel, transaction);
-
-            await transaction.CommitAsync();
-
-            return Ok(dbModel);
+            return Ok(result);
         }
 
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteAsync(int id)
         {
-            using var conn = new SqlConnection(_connectionString);
-
-            await conn.OpenAsync();
-
-            var query = "SELECT TOP 1 * FROM SampleTable WHERE Id = @id";
-
-            var model = conn.QueryFirstOrDefault<SampleModel>(query, new { id });
-
-            if (model == null) return NotFound();
-
-            using var transaction = conn.BeginTransaction();
-
-            await conn.DeleteAsync(model, transaction);
-
-            await transaction.CommitAsync();
+            await _sampleRepository.DeleteAsync(id);
 
             return NoContent();
         }
