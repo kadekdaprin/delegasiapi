@@ -30,11 +30,9 @@ namespace DelegasiAPI.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<SampleModel>> GetAsync(int? id = null)
+        public async Task<ActionResult<SampleModel>> GetAsync(int id)
         {
-            if (id == null) return NotFound();
-
-            var result = await _sampleRepository.GetAsync(id.GetValueOrDefault());
+            var result = await _sampleRepository.GetAsync(id);
 
             if (result == null) return NotFound();
 
