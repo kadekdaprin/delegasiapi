@@ -1,4 +1,5 @@
 ﻿using Dapper;
+using DelegasiAPI.Exceptions;
 using DelegasiAPI.Models;
 using Mahas.Components;
 using System.Data.SqlClient;
@@ -66,6 +67,12 @@ namespace DelegasiAPI.Repositories
 
             await conn.OpenAsync();
 
+            var query = "SELECT TOP 1 * FROM SampleTable WHERE Id = @id";
+
+            var dbModel = conn.QueryFirstOrDefault<SampleModel>(query, new { model.Id });
+
+            if (dbModel == null) throw new DefaultException("Data tidak ditemukan", model);
+
             using var transaction = conn.BeginTransaction();
 
             await conn.UpdateAsync(model, transaction);
@@ -84,6 +91,8 @@ namespace DelegasiAPI.Repositories
             var query = "SELECT TOP 1 * FROM SampleTable WHERE Id = @id";
 
             var model = conn.QueryFirstOrDefault<SampleModel>(query, new { id });
+
+            if (model == null) throw new DefaultException("Data tidak ditemukan", model);
 
             using var transaction = conn.BeginTransaction();
 

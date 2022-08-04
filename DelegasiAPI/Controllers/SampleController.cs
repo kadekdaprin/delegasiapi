@@ -1,5 +1,7 @@
 ﻿using Dapper;
+using DelegasiAPI.Exceptions;
 using DelegasiAPI.Models;
+using DelegasiAPI.Models.Validators;
 using DelegasiAPI.Repositories;
 using Mahas.Components;
 using Microsoft.AspNetCore.Http;
@@ -42,6 +44,14 @@ namespace DelegasiAPI.Controllers
         [HttpPost]
         public async Task<ActionResult<SampleModel>> PostAsync([FromBody] SampleModel model)
         {
+            var validationResult = new SampleModelValidator().Validate(model);
+
+            if (!validationResult.IsValid)
+            {
+                var errors = validationResult.Errors.Select(x => x.ErrorMessage).ToList();
+                return BadRequest(errors);
+            }
+
             var result = await _sampleRepository.InsertAsync(model);
 
             var uri = Url.Action("Get", new { id = result.Id });
@@ -52,6 +62,14 @@ namespace DelegasiAPI.Controllers
         [HttpPut]
         public async Task<ActionResult> PutAsync(SampleModel model)
         {
+            var validationResult = new SampleModelValidator().Validate(model);
+
+            if (!validationResult.IsValid)
+            {
+                var errors = validationResult.Errors.Select(x => x.ErrorMessage).ToList();
+                return BadRequest(errors);
+            }
+
             var result = await _sampleRepository.UpdateAsync(model);
 
             return Ok(result);

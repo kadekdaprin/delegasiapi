@@ -11,5 +11,7 @@ namespace DelegasiAPI.Models
 
         [DbColumn]
         public string Name { get; set; }
+
     }
 }
+
