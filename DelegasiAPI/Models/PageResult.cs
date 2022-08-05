@@ -15,6 +15,14 @@
             TotalCount = totalCount;
         }
 
+        public PageResult(int totalCount, IEnumerable<T> data, PageFilter filter)
+        {
+            Data = data;
+            PageIndex = filter.PageIndex;
+            PageSize = filter.PageSize;
+            TotalCount = totalCount;
+        }
+
         public IEnumerable<T> Data { get; set; } = new List<T>();
         public int PageIndex { get; set; }
         public int PageSize { get; set; }

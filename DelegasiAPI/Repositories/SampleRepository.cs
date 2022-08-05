@@ -6,33 +6,28 @@ using System.Data.SqlClient;
 
 namespace DelegasiAPI.Repositories
 {
-    public class SampleRepository
+    public class SampleRepository: BaseRepository
     {
-        private readonly string _connectionString;
-
-        public SampleRepository(IConfiguration configuration)
+        public SampleRepository(IConfiguration configuration) : base(configuration, "MainConnection")
         {
-            _connectionString = configuration.GetConnectionString("MainConnection");
         }
 
-        public async Task<List<SampleModel>> GetAsync(string? nama)
+        public async Task<PageResult<SampleModel>> GetAsync(string? nama, PageFilter filter)
         {
-            using var conn = new SqlConnection(_connectionString);
-
-            var query = "SELECT * FROM SampleTable";
-
             Dictionary<string, object> param = new();
+            List<string> where = new();
 
             if (!string.IsNullOrEmpty(nama))
             {
-                query += " WHERE Name LIKE @nama";
-
+                where.Add("Name LIKE @nama");
                 param.Add("nama", $"%{nama}%");
             }
 
-            var result = await conn.QueryAsync<SampleModel>(query, param);
+            var query = $"SELECT * FROM SampleTable {ToWhere(where)}";
 
-            return result.ToList();
+            var result = await GetPaginationAsync<SampleModel>(query, "Name", OrderByType.ASC, filter, param);
+
+            return result;
         }
 
         public async Task<SampleModel> GetAsync(int id)

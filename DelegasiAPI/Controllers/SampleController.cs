@@ -22,9 +22,9 @@ namespace DelegasiAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<SampleModel>>> GetAsync(string? nama = null)
+        public async Task<ActionResult<List<SampleModel>>> GetAsync([FromQuery]PageFilter filter, string? nama = null)
         {
-            var result = await _sampleRepository.GetAsync(nama);
+            var result = await _sampleRepository.GetAsync(nama, filter);
 
             return Ok(result);
         }
