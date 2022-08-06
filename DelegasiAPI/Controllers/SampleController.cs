@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using DelegasiAPI.Exceptions;
+using DelegasiAPI.Helpers;
 using DelegasiAPI.Models;
 using DelegasiAPI.Models.Validators;
 using DelegasiAPI.Repositories;
@@ -10,6 +11,7 @@ using System.Data.SqlClient;
 
 namespace DelegasiAPI.Controllers
 {
+    [ApiKey]
     [Route("api/[controller]")]
     [ApiController]
     public class SampleController : ControllerBase
