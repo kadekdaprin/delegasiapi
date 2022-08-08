@@ -26,6 +26,8 @@ namespace DelegasiAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<List<SampleModel>>> GetAsync([FromQuery]PageFilter filter, string? nama = null)
         {
+            throw new DefaultException("Text error log");
+
             var result = await _sampleRepository.GetAsync(nama, filter);
 
             return Ok(result);

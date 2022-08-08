@@ -2,7 +2,7 @@ using DelegasiAPI;
 using DelegasiAPI.Helpers;
 using DelegasiAPI.Repositories;
 using Microsoft.OpenApi.Models;
-using System.Reflection;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,8 +40,14 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-var app = builder.Build();
+builder.Host
+    .UseSerilog((context, services, configuration) => configuration
+        .ReadFrom.Configuration(context.Configuration)
+        .ReadFrom.Services(services)
+        .Enrich.FromLogContext()
+        .WriteTo.Console());
 
+var app = builder.Build();
 
 app.UseSwagger();
 app.UseSwaggerUI();
@@ -54,4 +60,16 @@ app.UseMiddleware<ErrorHandlingMiddleware>();
 
 app.MapControllers();
 
-app.Run();
+try
+{
+    Log.Information("Aplikasi dimulai.");
+    app.Run();
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "Terjadi kesalahan saat start aplikasi.");
+}
+finally
+{
+    Log.CloseAndFlush();
+}
